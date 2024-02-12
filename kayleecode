@@ -1,0 +1,753 @@
+> summary(data)
+   Player ID         Level            Trial        Proficiency (LexTale Score)    Stress          Syllabic Structure
+ Min.   : 1.00   Min.   : 1.000   Min.   :   1.0   Min.   :-25.0000            Length:19863       Length:19863      
+ 1st Qu.: 6.00   1st Qu.: 6.000   1st Qu.: 249.0   1st Qu.:-13.0000            Class :character   Class :character  
+ Median :11.00   Median : 8.000   Median : 500.0   Median : -1.0000            Mode  :character   Mode  :character  
+ Mean   :10.91   Mean   : 7.689   Mean   : 579.5   Mean   : -0.2938                                                 
+ 3rd Qu.:16.00   3rd Qu.:10.000   3rd Qu.: 832.0   3rd Qu.: 11.0000                                                 
+ Max.   :20.00   Max.   :12.000   Max.   :1817.0   Max.   : 28.0000                                                 
+ Sentence ID        Accuracy (True = Correct, False = Incorrect)    RTs (MS)     
+ Length:19863       Mode :logical                                Min.   :     0  
+ Class :character   FALSE:7656                                   1st Qu.:   480  
+ Mode  :character   TRUE :12207                                  Median :   770  
+                                                                 Mean   :  1102  
+                                                                 3rd Qu.:  1170  
+                                                                 Max.   :121400  
+ data_filtered <- subset(data, `RTs (MS)` <= 5000)
+hist(data_filtered$`RTs (MS)`, main = "Histogram of Reaction Times", xlab = "Reaction Times (MS)", breaks = 50)
+
+#left skewed histogram
+data_filtered$RTs_Log <- log(data_filtered$`RTs (MS)`)
+
+#logged transformed histogram
+hist(data_filtered$RTs_Log, main = "Histogram of Log-Transformed Reaction Times", xlab = "Log Reaction Times (MS)", breaks = 50)
+
+# Calculate cumulative response time for each participant
+data_filtered$Cumulative_RT <- ave(data_filtered$`RTs (MS)`, data_filtered$`Player ID`, FUN = cumsum)
+
+#model 1
+accuracy_model_1 <- glmer(`Accuracy (True = Correct, False = Incorrect)` ~ 1 + (1 | `Player ID`), 
++                           data = data_filtered, family = binomial)
+
+summary(accuracy_model_1)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ 1 + (1 | `Player ID`)
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 26013.3  26029.1 -13004.7  26009.3    19509 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.3956 -1.2184  0.7485  0.7969  0.8677 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept) 0.01488  0.122   
+Number of obs: 19511, groups:  Player ID, 20
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  0.47921    0.03157   15.18   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#need to scale predictor values for models 2 and 3
+> data_filtered$Cumulative_RT_scaled <- scale(data_filtered$Cumulative_RT, center = TRUE, scale = TRUE)
+
+#model 2
+> accuracy_model_2 <- update(accuracy_model_1, . ~ . + Cumulative_RT_scaled)
+ summary(accuracy_model_2)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +      Cumulative_RT_scaled
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 26014.4  26038.1 -13004.2  26008.4    19508 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.4101 -1.2260  0.7502  0.7939  0.8754 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept) 0.01458  0.1207  
+Number of obs: 19511, groups:  Player ID, 20
+
+Fixed effects:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.47713    0.03138  15.205   <2e-16 ***
+Cumulative_RT_scaled -0.01560    0.01624  -0.961    0.337    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+Cmltv_RT_sc 0.068 
+
+#model 3
+View(data_filtered)
+data_filtered$`Proficiency (LexTale Score)_scaled` <- scale(data_filtered$`Proficiency (LexTale Score)`, center = TRUE, scale = TRUE)
+accuracy_model_3 <- update(accuracy_model_2, . ~ . + `Proficiency (LexTale Score)_scaled`)
+summary(accuracy_model_3)
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled`
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 26016.3  26047.8 -13004.1  26008.3    19507 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.4106 -1.2236  0.7503  0.7929  0.8739 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept) 0.01438  0.1199  
+Number of obs: 19511, groups:  Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.47603    0.03131  15.202   <2e-16 ***
+Cumulative_RT_scaled                 -0.01568    0.01623  -0.966    0.334    
+`Proficiency (LexTale Score)_scaled` -0.01382    0.03333  -0.415    0.678    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_
+Cmltv_RT_sc 0.068        
+`P(LxTSc)_` 0.080  0.010 
+
+#for models 4 and 5, stress and syllabic structure need to be converted to factors (categorical variables)
+# Converting 'Stress' to a factor 
+> data_filtered$Stress <- factor(data_filtered$Stress)
+
+#model 4
+> accuracy_model_4 <- update(accuracy_model_3, . ~ . + Stress)
+> summary(accuracy_model_4)
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled` +      Stress
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 26016.6  26056.0 -13003.3  26006.6    19506 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.4248 -1.2203  0.7504  0.7960  0.8840 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept) 0.01445  0.1202  
+Number of obs: 19511, groups:  Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.49510    0.03464  14.291   <2e-16 ***
+Cumulative_RT_scaled                 -0.01609    0.01624  -0.991    0.322    
+`Proficiency (LexTale Score)_scaled` -0.01359    0.03339  -0.407    0.684    
+Stressparoxytone                     -0.03833    0.02949  -1.299    0.194    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ `P(LTS
+Cmltv_RT_sc  0.054              
+`P(LxTSc)_`  0.075  0.010       
+Strssprxytn -0.424  0.019 -0.005
+
+#model 5
+View(data_filtered)
+data_filtered$`Syllabic Structure` <- factor(data_filtered$`Syllabic Structure`)
+accuracy_model_5 <- update(accuracy_model_4, . ~ . + `Syllabic Structure`)
+summary(accuracy_model_5)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled` +      Stress + `Syllabic Structure`
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 26016.8  26064.1 -13002.4  26004.8    19505 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.4383 -1.2235  0.7523  0.7978  0.8919 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept) 0.0145   0.1204  
+Number of obs: 19511, groups:  Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.51355    0.03741  13.729   <2e-16 ***
+Cumulative_RT_scaled                 -0.01582    0.01624  -0.974    0.330    
+`Proficiency (LexTale Score)_scaled` -0.01386    0.03344  -0.415    0.678    
+Stressparoxytone                     -0.03666    0.02952  -1.242    0.214    
+`Syllabic Structure`CVC              -0.03897    0.02951  -1.321    0.187    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ `P(LTS Strssp
+Cmltv_RT_sc  0.054                     
+`P(LxTSc)_`  0.067  0.009              
+Strssprxytn -0.377  0.020 -0.005       
+`SStrct`CVC -0.374 -0.012  0.006 -0.043
+
+#adding Item as a random effect to all models
+accuracy_model_1_item <- glmer(`Accuracy (True = Correct, False = Incorrect)` ~ 1 + 
+                                 (1 | `Player ID`) + (1 | `Sentence ID`), 
+                               data = data_filtered, family = binomial)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ 1 + (1 | `Player ID`) +      (1 | `Sentence ID`)
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25943.9  25967.5 -12968.9  25937.9    19539 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7477 -1.1816  0.7052  0.7986  1.1829 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06384  0.2527  
+ Player ID   (Intercept) 0.01608  0.1268  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  0.48937    0.03739   13.09   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#model 2
+accuracy_model_2_item <- update(accuracy_model_1_item, . ~ . + Cumulative_RT_scaled)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    (1 | `Sentence ID`) + Cumulative_RT_scaled
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25945.2  25976.7 -12968.6  25937.2    19538 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7389 -1.1811  0.7064  0.7996  1.1828 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06377  0.2525  
+ Player ID   (Intercept) 0.01580  0.1257  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.48747    0.03726  13.084   <2e-16 ***
+Cumulative_RT_scaled -0.01355    0.01676  -0.808    0.419    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+Cmltv_RT_sc 0.062 
+
+#model3
+accuracy_model_3_item <- update(accuracy_model_2_item, . ~ . + `Proficiency (LexTale Score)_scaled`)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    (1 | `Sentence ID`) + Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled`
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25947.1  25986.5 -12968.5  25937.1    19537 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7393 -1.1813  0.7064  0.7998  1.1810 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06376  0.2525  
+ Player ID   (Intercept) 0.01562  0.1250  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.48642    0.03723  13.065   <2e-16 ***
+Cumulative_RT_scaled                 -0.01364    0.01676  -0.814    0.416    
+`Proficiency (LexTale Score)_scaled` -0.01305    0.03455  -0.378    0.706    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_
+Cmltv_RT_sc 0.063        
+`P(LxTSc)_` 0.072  0.011 
+
+#model4
+accuracy_model_4_item <- update(accuracy_model_3_item, . ~ . + Stress)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    (1 | `Sentence ID`) + Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled` +      Stress
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25948.1  25995.3 -12968.0  25936.1    19536 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-1.734 -1.183  0.706  0.799  1.176 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06335  0.2517  
+ Player ID   (Intercept) 0.01564  0.1251  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.51025    0.04408  11.575   <2e-16 ***
+Cumulative_RT_scaled                 -0.01384    0.01676  -0.826    0.409    
+`Proficiency (LexTale Score)_scaled` -0.01292    0.03457  -0.374    0.709    
+Stressparoxytone                     -0.04773    0.04718  -1.012    0.312    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ `P(LTS
+Cmltv_RT_sc  0.047              
+`P(LxTSc)_`  0.062  0.011       
+Strssprxytn -0.536  0.012 -0.004
+
+#model5
+accuracy_model_5_item <- update(accuracy_model_4_item, . ~ . + `Syllabic Structure`)
+summary(accuracy_model_5_item)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ (1 | `Player ID`) +  
+    (1 | `Sentence ID`) + Cumulative_RT_scaled + `Proficiency (LexTale Score)_scaled` +  
+    Stress + `Syllabic Structure`
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25949.4  26004.5 -12967.7  25935.4    19535 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7359 -1.1820  0.7062  0.7992  1.1713 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06296  0.2509  
+ Player ID   (Intercept) 0.01565  0.1251  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                           0.52947    0.04972  10.649   <2e-16 ***
+Cumulative_RT_scaled                 -0.01379    0.01676  -0.823    0.411    
+`Proficiency (LexTale Score)_scaled` -0.01302    0.03458  -0.377    0.706    
+Stressparoxytone                     -0.04699    0.04710  -0.998    0.318    
+`Syllabic Structure`CVC              -0.03936    0.04709  -0.836    0.403    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ `P(LTS Strssp
+Cmltv_RT_sc  0.043                     
+`P(LxTSc)_`  0.054  0.011              
+Strssprxytn -0.466  0.012 -0.004       
+`SStrct`CVC -0.464 -0.004  0.004 -0.018
+> 
+
+#RT Models
+#categorical variables are treated as factors
+data_filtered$Stress <- factor(data_filtered$Stress)
+data_filtered$`Syllabic Structure` <- factor(data_filtered$`Syllabic Structure`)
+#Proficiency (LexTale Score) scaled for continuous predictor
+data_filtered$`Proficiency (LexTale Score)_scaled` <- scale(data_filtered$`Proficiency (LexTale Score)`)
+
+#model1
+rt_model_1 <- lmer(`RTs (MS)` ~ 1 + (1 | `Player ID`) + (1 | `Sentence ID`), 
+                   data = data_filtered)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ 1 + (1 | `Player ID`) + (1 | `Sentence ID`)
+   Data: data_filtered
+
+REML criterion at convergence: 307913.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2940 -0.6119 -0.1600  0.3891  6.4491 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4185    64.69  
+ Player ID   (Intercept)  53044   230.31  
+ Residual                403248   635.02  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   960.46      51.95   18.49
+
+#model2
+rt_model_2 <- update(rt_model_1, . ~ . + `Proficiency (LexTale Score)_scaled`)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled`
+   Data: data_filtered
+
+REML criterion at convergence: 307896.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2942 -0.6122 -0.1596  0.3892  6.4474 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4184    64.69  
+ Player ID   (Intercept)  36905   192.11  
+ Residual                403247   635.02  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error t value
+(Intercept)                            946.41      43.73  21.641
+`Proficiency (LexTale Score)_scaled`  -143.60      47.30  -3.036
+
+Correlation of Fixed Effects:
+            (Intr)
+`P(LxTSc)_` 0.104 
+
+#model3
+rt_model_3 <- update(rt_model_2, . ~ . + Stress)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled` +      Stress
+   Data: data_filtered
+
+REML criterion at convergence: 307887.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3002 -0.6125 -0.1589  0.3882  6.4521 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4141    64.35  
+ Player ID   (Intercept)  36922   192.15  
+ Residual                403259   635.03  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error t value
+(Intercept)                            954.24      44.22  21.577
+`Proficiency (LexTale Score)_scaled`  -143.55      47.32  -3.034
+Stressparoxytone                       -15.69      13.07  -1.200
+
+Correlation of Fixed Effects:
+            (Intr) `P(LTS
+`P(LxTSc)_`  0.103       
+Strssprxytn -0.148 -0.001
+
+#model4
+rt_model_4 <- update(rt_model_3, . ~ . + `Syllabic Structure`)
+summary(rt_model_4)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled` +  
+    Stress + `Syllabic Structure`
+   Data: data_filtered
+
+REML criterion at convergence: 307870.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3156 -0.6131 -0.1587  0.3894  6.4625 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   3770    61.4   
+ Player ID   (Intercept)  36938   192.2   
+ Residual                403244   635.0   
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error t value
+(Intercept)                            974.55      44.62  21.840
+`Proficiency (LexTale Score)_scaled`  -143.68      47.32  -3.036
+Stressparoxytone                       -14.93      12.77  -1.169
+`Syllabic Structure`CVC                -41.78      12.77  -3.272
+
+Correlation of Fixed Effects:
+            (Intr) `P(LTS Strssp
+`P(LxTSc)_`  0.102              
+Strssprxytn -0.140 -0.001       
+`SStrct`CVC -0.139  0.001 -0.022
+
+#learning effects
+rt_learning_model <- lmer(`RTs (MS)` ~ Trial + (1 | `Player ID`), data = data_filtered)
+summary(rt_learning_model)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ Trial + (1 | `Player ID`)
+   Data: data_filtered
+
+REML criterion at convergence: 307955.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3193 -0.6150 -0.1583  0.3834  6.3588 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player ID (Intercept)  49435   222.3   
+ Residual              406847   637.8   
+Number of obs: 19542, groups:  Player ID, 20
+
+Fixed effects:
+             Estimate Std. Error t value
+(Intercept) 993.50046   50.36129  19.727
+Trial        -0.07011    0.01278  -5.485
+
+Correlation of Fixed Effects:
+      (Intr)
+Trial -0.126
+
+#only correct responses
+data_filtered_correct <- subset(data_filtered, `Accuracy (True = Correct, False = Incorrect)` == TRUE)
+rt_model_correct <- lmer(`RTs (MS)` ~ Trial + (1 | `Player ID`) + (1 | `Sentence ID`), 
+                         data = data_filtered_correct)
+summary(rt_model_correct)
+Linear mixed model fit by REML ['lmerMod']
+Formula: `RTs (MS)` ~ Trial + (1 | `Player ID`) + (1 | `Sentence ID`)
+   Data: data_filtered_correct
+
+REML criterion at convergence: 189340.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2505 -0.5951 -0.1558  0.3720  6.2217 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   3955    62.89  
+ Player ID   (Intercept)  59418   243.76  
+ Residual                427080   653.51  
+Number of obs: 11971, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept) 1005.36065   55.72081  18.043
+Trial         -0.04713    0.01716  -2.746
+
+Correlation of Fixed Effects:
+      (Intr)
+Trial -0.152
+
+#plots
+install.packages("ggplot2")
+library(ggplot2)
+data_filtered_correct$Predicted_RT <- predict(rt_model_correct, re.form = NA)  # re.form = NA to exclude random effects
+ggplot(data_filtered_correct, aes(x = Trial)) +
+  geom_point(aes(y = `RTs (MS)`), color = "blue", alpha = 0.3, size = 1) +  # Actual RTs in blue
+  geom_line(aes(y = Predicted_RT), color = "red") +  # Predicted RTs in red
+  theme_minimal() +
+  labs(title = "Response Time Over Trials for Accurate Responses",
+       x = "Trial",
+       y = "Response Time (ms)") +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the plot title
+
+avg_rt_per_trial <- data_filtered_correct %>%
+  group_by(Trial) %>%
+  summarise(Mean_RT = mean(`RTs (MS)`, na.rm = TRUE))
+
+
+ggplot(avg_rt_per_trial, aes(x = Trial, y = Mean_RT)) +
+  geom_point(color = "blue", size = 1.5, alpha = 0.6) +  # Plot mean RTs per trial
+  geom_smooth(method = "loess", color = "red", se = FALSE) +  # Add a LOESS smoothed trend line
+  theme_minimal() +
+  labs(title = "Average Response Time Over Trials for Accurate Responses",
+       x = "Trial Number",
+       y = "Average Response Time (ms)") +
+  theme(plot.title = element_text(hjust = 0.5))  # Center the plot title
+
+#gam model
+# Load the necessary library
+library(mgcv)
+# Convert 'Player ID' and 'Sentence ID' to factors
+data_filtered_correct$`Player ID` <- as.factor(data_filtered_correct$`Player ID`)
+data_filtered_correct$`Sentence ID` <- as.factor(data_filtered_correct$`Sentence ID`)
+
+# Rename 'Player ID' to 'Player_ID' and 'Sentence ID' to 'Sentence_ID'
+names(data_filtered_correct)[names(data_filtered_correct) == "Player ID"] <- "Player_ID"
+names(data_filtered_correct)[names(data_filtered_correct) == "Sentence ID"] <- "Sentence_ID"
+
+# Rename 'RTs (MS)' to 'RTs_MS'
+data_filtered_correct$RTs_MS <- data_filtered_correct$`RTs (MS)`
+
+#simple gam model
+simplified_gam_model <- gam(RTs_MS ~ s(Trial), data = data_filtered_correct)
+summary(simplified_gam_model)
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+RTs_MS ~ s(Trial)
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  921.334      6.247   147.5   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+           edf Ref.df     F p-value    
+s(Trial) 8.629  8.953 33.17  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.024   Deviance explained = 2.47%
+GCV = 4.6756e+05  Scale est. = 4.6718e+05  n = 11971
+> plot(simplified_gam_model)
+
+#gam random effects players
+#treat player as a factor
+data_filtered_correct$Player_ID <- as.factor(data_filtered_correct$Player_ID)
+
+#model1
+gam_model_player <- gam(RTs_MS ~ s(Trial) + s(Player_ID, bs = "re"), 
++                         data = data_filtered_correct, 
++                         method = "REML")
+> View(gam_model_player)
+> summary(gam_model_player)
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+RTs_MS ~ s(Trial) + s(Player_ID, bs = "re")
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   973.25      53.71   18.12   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                edf Ref.df      F p-value    
+s(Trial)      7.721  8.542  8.367  <2e-16 ***
+s(Player_ID) 18.719 19.000 56.381  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.104   Deviance explained = 10.6%
+-REML =  94658  Scale est. = 4.2889e+05  n = 11971
+
+#post hoc top half bottom half
+median_proficiency <- median(data_filtered_correct$`Proficiency (LexTale Score)`, na.rm = TRUE)
+
+#split data top and bottom halfs
+top_half <- data_filtered_correct[data_filtered_correct$`Proficiency (LexTale Score)` >= median_proficiency, ]
+bottom_half <- data_filtered_correct[data_filtered_correct$`Proficiency (LexTale Score)` < median_proficiency, ]
+
+##GAM for the top half
+library(mgcv)
+gam_model_top_half <- gam(RTs_MS ~ s(Trial) + s(Player_ID, bs = "re"),
+                          data = top_half, method = "REML")
+
+# For the bottom half
+gam_model_bottom_half <- gam(RTs_MS ~ s(Trial) + s(Player_ID, bs = "re"),
+                             data = bottom_half, method = "REML")
+
+#top half summary
+summary(gam_model_top_half)
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+RTs_MS ~ s(Trial) + s(Player_ID, bs = "re")
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   812.12      41.01    19.8   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+               edf Ref.df     F p-value    
+s(Trial)     7.342  8.308 10.99  <2e-16 ***
+s(Player_ID) 7.778  8.000 29.43  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0565   Deviance explained = 5.87%
+-REML =  47523  Scale est. = 2.4165e+05  n = 6237
+
+#bottom half summary
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+RTs_MS ~ s(Trial) + s(Player_ID, bs = "re")
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  1108.04      73.66   15.04   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+               edf Ref.df      F p-value    
+s(Trial)     5.194   6.29  3.477 0.00171 ** 
+s(Player_ID) 9.761  10.00 37.803 < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0803   Deviance explained = 8.27%
+-REML =  46444  Scale est. = 6.3149e+05  n = 5734
+> 
+> plot(gam_model_top_half)
+Hit <Return> to see next plot: plot(gam_model_bottom_half)
+> 
+> 
+> View(bottom_half)
+> summary(gam_model_bottom_half)
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+RTs_MS ~ s(Trial) + s(Player_ID, bs = "re")
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  1108.04      73.66   15.04   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+               edf Ref.df      F p-value    
+s(Trial)     5.194   6.29  3.477 0.00171 ** 
+s(Player_ID) 9.761  10.00 37.803 < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0803   Deviance explained = 8.27%
+-REML =  46444  Scale est. = 6.3149e+05  n = 5734
