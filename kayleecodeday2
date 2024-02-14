@@ -1,0 +1,328 @@
+#post hoc analysis
+# Calculate the median or mean cumulative RT for each participant
+participant_median_rt <- aggregate(Cumulative_RT ~ `Player ID`, data = data_filtered, FUN = function(x) median(x))
+
+# Determine the overall median or mean to split participants into groups
+overall_median_rt <- median(participant_median_rt$Cumulative_RT)
+
+# Add a speed group variable to the participant_median_rt
+participant_median_rt$speed_group <- ifelse(participant_median_rt$Cumulative_RT <= overall_median_rt, "Faster", "Slower")
+
+# Merge this speed group information back into the data_filtered dataset
+data_filtered <- merge(data_filtered, participant_median_rt[, c("Player ID", "speed_group")], by = "Player ID")
+
+library(lme4)
+
+#rescale predictor variables: 
+data_filtered$Cumulative_RT_scaled <- scale(data_filtered$Cumulative_RT)
+
+summary(accuracy_model_interaction)
+
+# Update the model to include an interaction between cumulative RT and speed group
+accuracy_model_interaction <- glmer(`Accuracy (True = Correct, False = Incorrect)` ~ Cumulative_RT_scaled * speed_group + 
+                                      (1 | `Player ID`) + (1 | `Sentence ID`), 
+                                    data = data_filtered, family = binomial)
+generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ Cumulative_RT_scaled *  
+    speed_group + (1 | `Player ID`) + (1 | `Sentence ID`)
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25946.1  25993.4 -12967.1  25934.1    19536 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7321 -1.1824  0.7058  0.7988  1.1824 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06370  0.2524  
+ Player ID   (Intercept) 0.01542  0.1242  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                       Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                             0.53592    0.05487   9.767   <2e-16 ***
+Cumulative_RT_scaled                    0.05328    0.04199   1.269   0.2045    
+speed_groupSlower                      -0.05883    0.06787  -0.867   0.3860    
+Cumulative_RT_scaled:speed_groupSlower -0.07849    0.04596  -1.708   0.0877 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+Correlation of Fixed Effects:
+(Intr) Cm_RT_ spd_gS
+Cmltv_RT_sc  0.393              
+spd_grpSlwr -0.718 -0.318       
+Cmlt_RT_:_S -0.359 -0.914  0.269
+
+#checking if there were differences between groups based on syllabic structure: 
+accuracy_model_interaction_updated <- glmer(`Accuracy (True = Correct, False = Incorrect)` ~ 
+                                            Cumulative_RT_scaled * speed_group * `Syllabic Structure` + 
+                                            (1 | `Player ID`) + (1 | `Sentence ID`), 
+                                            data = data_filtered, family = binomial)
+basic_model_with_factor <- glmer(`Accuracy (True = Correct, False = Incorrect)` ~ 
+                                   Cumulative_RT_scaled + 
+                                   speed_group + 
+                                   factor(`Syllabic Structure`) + 
+                                   (1 | `Player ID`) + 
+                                   (1 | `Sentence ID`), 
+                                 data = data_filtered, family = binomial)
+
+model_with_interaction_1 <- update(basic_model_with_factor, . ~ . + 
+                                     Cumulative_RT_scaled:speed_group)
+model_with_interaction_2 <- update(model_with_interaction_1, . ~ . + 
+                                     Cumulative_RT_scaled:factor(`Syllabic Structure`))
+
+model_with_interaction_3 <- update(model_with_interaction_2, . ~ . + 
+                                     speed_group:factor(`Syllabic Structure`))
+summary(model_with_interaction_3)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: `Accuracy (True = Correct, False = Incorrect)` ~ Cumulative_RT_scaled +  
+    speed_group + factor(`Syllabic Structure`) + (1 | `Player ID`) +  
+    (1 | `Sentence ID`) + Cumulative_RT_scaled:speed_group +  
+    Cumulative_RT_scaled:factor(`Syllabic Structure`) + speed_group:factor(`Syllabic Structure`)
+   Data: data_filtered
+
+     AIC      BIC   logLik deviance df.resid 
+ 25941.5  26012.4 -12961.7  25923.5    19533 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7717 -1.1809  0.7043  0.7974  1.1748 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept) 0.06294  0.2509  
+ Player ID   (Intercept) 0.01588  0.1260  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                                     Estimate Std. Error z value Pr(>|z|)
+(Intercept)                                           0.52996    0.06417   8.259   <2e-16
+Cumulative_RT_scaled                                  0.08890    0.04512   1.970   0.0488
+speed_groupSlower                                    -0.01791    0.07644  -0.234   0.8148
+factor(`Syllabic Structure`)CVC                       0.01244    0.06473   0.192   0.8475
+Cumulative_RT_scaled:speed_groupSlower               -0.07710    0.04600  -1.676   0.0937
+Cumulative_RT_scaled:factor(`Syllabic Structure`)CVC -0.07410    0.03253  -2.278   0.0227
+speed_groupSlower:factor(`Syllabic Structure`)CVC    -0.08194    0.06761  -1.212   0.2255
+                                                        
+(Intercept)                                          ***
+Cumulative_RT_scaled                                 *  
+speed_groupSlower                                       
+factor(`Syllabic Structure`)CVC                         
+Cumulative_RT_scaled:speed_groupSlower               .  
+Cumulative_RT_scaled:factor(`Syllabic Structure`)CVC *  
+speed_groupSlower:factor(`Syllabic Structure`)CVC       
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ spd_gS f(`SS` C_RT_: C_RT_S
+Cmltv_RT_sc  0.372                                   
+spd_grpSlwr -0.710 -0.331                            
+fc(`SS`)CVC -0.508 -0.114  0.305                     
+Cmlt_RT_:_S -0.320 -0.853  0.251  0.026              
+C_RT_:(`SS` -0.129 -0.364  0.157  0.248  0.005       
+s_S:(`SS`)C  0.350  0.154 -0.442 -0.686 -0.028 -0.358
+#RT Models with P Values: 
+
+#adding p values to RT models
+
+install.packages("lmerTest")  # Install lmerTest package if you haven't
+library(lmerTest)  # Load lmerTest to use its functionality
+
+rt_model_1 <- lmer(`RTs (MS)` ~ 1 + (1 | `Player ID`) + (1 | `Sentence ID`), data = data_filtered)
+
+summary(rt_model_1)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: `RTs (MS)` ~ 1 + (1 | `Player ID`) + (1 | `Sentence ID`)
+   Data: data_filtered
+
+REML criterion at convergence: 307913.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2940 -0.6119 -0.1600  0.3891  6.4491 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4185    64.69  
+ Player ID   (Intercept)  53044   230.31  
+ Residual                403248   635.02  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+            Estimate Std. Error     df t value Pr(>|t|)    
+(Intercept)   960.46      51.95  19.25   18.49 1.02e-13 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# Update rt_model_1 to include Proficiency (LexTale Score)_scaled as a fixed effect
+rt_model_2 <- update(rt_model_1, . ~ . + `Proficiency (LexTale Score)_scaled`)
+
+# Display the summary of rt_model_2 with p-values
+summary(rt_model_2)
+
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: 
+`RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled`
+   Data: data_filtered
+
+REML criterion at convergence: 307896.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2942 -0.6122 -0.1596  0.3892  6.4474 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4184    64.69  
+ Player ID   (Intercept)  36905   192.11  
+ Residual                403247   635.02  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)                            946.41      43.73   18.38  21.641 1.56e-14 ***
+`Proficiency (LexTale Score)_scaled`  -143.60      47.30   17.90  -3.036  0.00714 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+`P(LxTSc)_` 0.104 
+
+# Assuming lmerTest is loaded
+# Update rt_model_2 to include Stress as an additional fixed effect
+rt_model_3 <- update(rt_model_2, . ~ . + Stress)
+
+# Display the summary of rt_model_3 with p-values
+summary(rt_model_3)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: 
+`RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled` +  
+    Stress
+   Data: data_filtered
+
+REML criterion at convergence: 307887.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3002 -0.6125 -0.1589  0.3882  6.4521 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   4141    64.35  
+ Player ID   (Intercept)  36922   192.15  
+ Residual                403259   635.03  
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)                            954.24      44.22   19.20  21.577 6.29e-15 ***
+`Proficiency (LexTale Score)_scaled`  -143.55      47.32   17.90  -3.034  0.00717 ** 
+Stressparoxytone                       -15.69      13.07  188.88  -1.200  0.23150    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) `P(LTS
+`P(LxTSc)_`  0.103       
+Strssprxytn -0.148 -0.001
+
+# Update rt_model_3 to include Syllabic Structure as an additional fixed effect
+rt_model_4 <- update(rt_model_3, . ~ . + `Syllabic Structure`)
+
+# Display the summary of rt_model_4 with p-values
+summary(rt_model_4)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: 
+`RTs (MS)` ~ (1 | `Player ID`) + (1 | `Sentence ID`) + `Proficiency (LexTale Score)_scaled` +  
+    Stress + `Syllabic Structure`
+   Data: data_filtered
+
+REML criterion at convergence: 307870.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3156 -0.6131 -0.1587  0.3894  6.4625 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence ID (Intercept)   3770    61.4   
+ Player ID   (Intercept)  36938   192.2   
+ Residual                403244   635.0   
+Number of obs: 19542, groups:  Sentence ID, 192; Player ID, 20
+
+Fixed effects:
+                                     Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)                            974.55      44.62   19.89  21.840 2.28e-15 ***
+`Proficiency (LexTale Score)_scaled`  -143.68      47.32   17.90  -3.036  0.00714 ** 
+Stressparoxytone                       -14.93      12.77  189.49  -1.169  0.24401    
+`Syllabic Structure`CVC                -41.78      12.77  189.33  -3.272  0.00127 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) `P(LTS Strssp
+`P(LxTSc)_`  0.102              
+Strssprxytn -0.140 -0.001       
+`SStrct`CVC -0.139  0.001 -0.022
+> 
+
+#Investigate whether the effect of trial number on reaction times (RTs) is distinct for different syllabic structures (CV vs. CVC verbs) and for different levels of learner proficiency (higher vs. lower proficiency)
+
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: `RTs (MS)` ~ Trial_scaled * `Syllabic Structure` * `Proficiency (LexTale Score)_scaled` +  
+    (1 | Player_ID) + (1 | Sentence_ID)
+   Data: data_filtered_correct
+
+REML criterion at convergence: 189265.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.2695 -0.5932 -0.1558  0.3708  6.2556 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept)   3587    59.89  
+ Player_ID   (Intercept)  40795   201.98  
+ Residual                427053   653.49  
+Number of obs: 11971, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                                                                           Estimate Std. Error        df t value
+(Intercept)                                                                 983.319     46.693    19.108  21.059
+Trial_scaled                                                                -18.487      9.175 10951.922  -2.015
+`Syllabic Structure`CVC                                                     -39.577     14.897   192.312  -2.657
+`Proficiency (LexTale Score)_scaled`                                       -153.896     50.271    18.268  -3.061
+Trial_scaled:`Syllabic Structure`CVC                                         -1.444     12.282 10670.132  -0.118
+Trial_scaled:`Proficiency (LexTale Score)_scaled`                            -0.498      8.484  8833.134  -0.059
+`Syllabic Structure`CVC:`Proficiency (LexTale Score)_scaled`                 -7.185     12.377 11854.922  -0.581
+Trial_scaled:`Syllabic Structure`CVC:`Proficiency (LexTale Score)_scaled`   -15.778     11.422  9837.963  -1.381
+                                                                          Pr(>|t|)    
+(Intercept)                                                                1.1e-14 ***
+Trial_scaled                                                               0.04395 *  
+`Syllabic Structure`CVC                                                    0.00855 ** 
+`Proficiency (LexTale Score)_scaled`                                       0.00664 ** 
+Trial_scaled:`Syllabic Structure`CVC                                       0.90643    
+Trial_scaled:`Proficiency (LexTale Score)_scaled`                          0.95319    
+`Syllabic Structure`CVC:`Proficiency (LexTale Score)_scaled`               0.56158    
+Trial_scaled:`Syllabic Structure`CVC:`Proficiency (LexTale Score)_scaled`  0.16721    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Trl_sc `SS`CV `P(LTS T_:`SS T_:`(S `SS`(S
+Trial_scald  0.022                                          
+`SStrct`CVC -0.158 -0.005                                   
+`P(LxTSc)_`  0.101 -0.022 -0.001                            
+Tr_:`SS`CVC  0.000 -0.634  0.011  0.012                     
+T_:`P(LTS)_ -0.026 -0.103  0.066 -0.021  0.049              
+`SS`CVC:`(S -0.003  0.067  0.024 -0.123 -0.092  0.149       
+T_:`SS`CV(S  0.015  0.053 -0.082  0.025 -0.048 -0.668 -0.187
+
+            
