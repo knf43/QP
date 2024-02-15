@@ -1,0 +1,465 @@
+#accuracy model 1
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID)
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24570.3  24601.6 -12281.1  24562.3    18468 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7426 -1.1694  0.7059  0.8037  1.1878 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06958  0.2638  
+ Player_ID   (Intercept) 0.01793  0.1339  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.46508    0.03941  11.800   <2e-16 ***
+Cumulative_RT_scaled -0.01916    0.01768  -1.084    0.278    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+Cmltv_RT_sc 0.082  
+
+
+
+#accuracy model 2
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +      Proficiency_scaled
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24572.3  24611.4 -12281.1  24562.3    18467 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7420 -1.1693  0.7059  0.8038  1.1880 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06958  0.2638  
+ Player_ID   (Intercept) 0.01794  0.1339  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                      Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.465247   0.039574  11.756   <2e-16 ***
+Cumulative_RT_scaled -0.019201   0.017699  -1.085    0.278    
+Proficiency_scaled    0.001746   0.036996   0.047    0.962    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_
+Cmltv_RT_sc  0.078       
+Prfcncy_scl  0.089 -0.048
+
+# Accuracy Model 3
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +      Proficiency_scaled + Stress
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24573.4  24620.4 -12280.7  24561.4    18466 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7503 -1.1685  0.7058  0.8035  1.1837 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06921  0.2631  
+ Player_ID   (Intercept) 0.01796  0.1340  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                      Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           0.487693   0.046553  10.476   <2e-16 ***
+Cumulative_RT_scaled -0.019431   0.017700  -1.098    0.272    
+Proficiency_scaled    0.001885   0.037014   0.051    0.959    
+Stressparoxytone     -0.044951   0.049007  -0.917    0.359    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_
+Cmltv_RT_sc  0.059              
+Prfcncy_scl  0.078 -0.048       
+Strssprxytn -0.527  0.014 -0.004
+
+#Accuracy Model 4
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + Proficiency_scaled +      Stress + Syllabic_Structure
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24693.8  24740.8 -12340.9  24681.8    18466 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.4530 -1.2112  0.7549  0.8104  0.8943 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Player_ID (Intercept) 0.0163   0.1277  
+Number of obs: 18472, groups:  Player_ID, 20
+
+Fixed effects:
+                        Estimate Std. Error z value Pr(>|z|)    
+(Intercept)            0.4960087  0.0392999  12.621   <2e-16 ***
+Cumulative_RT_scaled  -0.0209044  0.0170775  -1.224   0.2209    
+Proficiency_scaled     0.0005533  0.0354851   0.016   0.9876    
+Stressparoxytone      -0.0320337  0.0302972  -1.057   0.2904    
+Syllabic_StructureCVC -0.0506544  0.0302784  -1.673   0.0943 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp
+Cmltv_RT_sc  0.067                     
+Prfcncy_scl  0.083 -0.050              
+Strssprxytn -0.369  0.022 -0.007       
+Syllbc_SCVC -0.369 -0.012  0.008 -0.042Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24574.3  24629.1 -12280.2  24560.3    18465 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7380 -1.1698  0.7053  0.8030  1.1772 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06856  0.2618  
+ Player_ID   (Intercept) 0.01798  0.1341  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                       Estimate Std. Error z value Pr(>|z|)    
+(Intercept)            0.512864   0.052338   9.799   <2e-16 ***
+Cumulative_RT_scaled  -0.019361   0.017699  -1.094    0.274    
+Proficiency_scaled     0.001692   0.037030   0.046    0.964    
+Stressparoxytone      -0.044044   0.048873  -0.901    0.367    
+Syllabic_StructureCVC -0.051327   0.048856  -1.051    0.293    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp
+Cmltv_RT_sc  0.054                     
+Prfcncy_scl  0.067 -0.048              
+Strssprxytn -0.460  0.014 -0.004       
+Syllbc_SCVC -0.459 -0.004  0.005 -0.017
+> 
+
+#Accuracy Model 5
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure + Cumulative_RT_scaled:Stress +  
+    Cumulative_RT_scaled:Syllabic_Structure
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24567.0  24637.5 -12274.5  24549.0    18463 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7518 -1.1700  0.7035  0.8028  1.1909 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06818  0.2611  
+ Player_ID   (Intercept) 0.01821  0.1350  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                                             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                                 0.5095273  0.0524126   9.721  < 2e-16 ***
+Cumulative_RT_scaled                        0.0490503  0.0278027   1.764  0.07769 .  
+Proficiency_scaled                          0.0009393  0.0372274   0.025  0.97987    
+Stressparoxytone                           -0.0392627  0.0488292  -0.804  0.42135    
+Syllabic_StructureCVC                      -0.0496013  0.0488143  -1.016  0.30957    
+Cumulative_RT_scaled:Stressparoxytone      -0.0452425  0.0313742  -1.442  0.14929    
+Cumulative_RT_scaled:Syllabic_StructureCVC -0.0912660  0.0313956  -2.907  0.00365 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp S_SCVC Cm_RT_:S
+Cmltv_RT_sc  0.022                                     
+Prfcncy_scl  0.068 -0.034                              
+Strssprxytn -0.458  0.023 -0.005                       
+Syllbc_SCVC -0.458  0.010  0.005 -0.017                
+Cmltv_RT_:S  0.018 -0.527 -0.003  0.008 -0.036         
+C_RT_:S_SCV  0.009 -0.518  0.008 -0.036  0.009 -0.080  
+
+#Accuracy Model 6
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: Accuracy ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure + Cumulative_RT_scaled:Stress +  
+    Cumulative_RT_scaled:Syllabic_Structure + Proficiency_scaled:Stress +      Proficiency_scaled:Syllabic_Structure
+   Data: filtered_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 24567.8  24653.9 -12272.9  24545.8    18461 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7759 -1.1706  0.7032  0.8027  1.1753 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.06810  0.2610  
+ Player_ID   (Intercept) 0.01842  0.1357  
+Number of obs: 18472, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                                            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                                 0.509056   0.052506   9.695   <2e-16 ***
+Cumulative_RT_scaled                        0.051205   0.027873   1.837   0.0662 .  
+Proficiency_scaled                         -0.030460   0.043071  -0.707   0.4794    
+Stressparoxytone                           -0.039094   0.048813  -0.801   0.4232    
+Syllabic_StructureCVC                      -0.049328   0.048800  -1.011   0.3121    
+Cumulative_RT_scaled:Stressparoxytone      -0.049065   0.031457  -1.560   0.1188    
+Cumulative_RT_scaled:Syllabic_StructureCVC -0.091923   0.031483  -2.920   0.0035 ** 
+Proficiency_scaled:Stressparoxytone         0.054373   0.031045   1.751   0.0799 .  
+Proficiency_scaled:Syllabic_StructureCVC    0.008305   0.031057   0.267   0.7891    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp S_SCVC Cm_RT_:S C_RT_:S_ Prf_:S
+Cmltv_RT_sc  0.022                                                     
+Prfcncy_scl  0.059 -0.060                                              
+Strssprxytn -0.457  0.023 -0.004                                       
+Syllbc_SCVC -0.457  0.010  0.003 -0.017                                
+Cmltv_RT_:S  0.018 -0.528  0.021  0.008 -0.036                         
+C_RT_:S_SCV  0.008 -0.519  0.032 -0.036  0.009 -0.080                  
+Prfcncy_s:S -0.005  0.033 -0.336  0.001  0.003 -0.070    0.003         
+Prf_:S_SCVC  0.004  0.051 -0.342  0.002  0.001  0.004   -0.071   -0.066
+
+
+
+#RT 1
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID)
+   Data: accurate_responses
+
+REML criterion at convergence: 24001.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3132 -0.4695  0.1425  0.6522  2.4634 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.00890  0.09434 
+ Player_ID   (Intercept) 0.05174  0.22746 
+ Residual                0.48450  0.69606 
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                      Estimate Std. Error t value
+(Intercept)           6.468710   0.051876  124.70
+Cumulative_RT_scaled -0.065975   0.007882   -8.37
+
+Correlation of Fixed Effects:
+            (Intr)
+Cmltv_RT_sc 0.036 
+
+
+#RT2
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +      Proficiency_scaled
+   Data: accurate_responses
+
+REML criterion at convergence: 24005.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3129 -0.4693  0.1426  0.6523  2.4641 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.008899 0.09434 
+ Player_ID   (Intercept) 0.053911 0.23219 
+ Residual                0.484500 0.69606 
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                      Estimate Std. Error t value
+(Intercept)           6.464969   0.053418 121.025
+Cumulative_RT_scaled -0.065953   0.007884  -8.366
+Proficiency_scaled   -0.029161   0.057526  -0.507
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_
+Cmltv_RT_sc  0.033       
+
+
+
+#RT3
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +      Proficiency_scaled + Stress
+   Data: accurate_responses
+
+REML criterion at convergence: 24010
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3225 -0.4709  0.1429  0.6535  2.4709 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.008817 0.0939  
+ Player_ID   (Intercept) 0.053920 0.2322  
+ Residual                0.484518 0.6961  
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                      Estimate Std. Error t value
+(Intercept)           6.476438   0.054247 119.387
+Cumulative_RT_scaled -0.066226   0.007886  -8.397
+Proficiency_scaled   -0.029078   0.057531  -0.505
+Stressparoxytone     -0.023165   0.019055  -1.216
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_
+Cmltv_RT_sc  0.028              
+Prfcncy_scl  0.135 -0.014       
+Strssprxytn -0.174  0.029 -0.001
+
+
+
+#RT4
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure
+   Data: accurate_responses
+
+REML criterion at convergence: 24010
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3451 -0.4730  0.1430  0.6489  2.4815 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.008326 0.09124 
+ Player_ID   (Intercept) 0.053891 0.23214 
+ Residual                0.484533 0.69608 
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                       Estimate Std. Error t value
+(Intercept)            6.499301   0.054961 118.253
+Cumulative_RT_scaled  -0.066260   0.007882  -8.407
+Proficiency_scaled    -0.029340   0.057516  -0.510
+Stressparoxytone      -0.022650   0.018783  -1.206
+Syllabic_StructureCVC -0.046678   0.018746  -2.490
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp
+Cmltv_RT_sc  0.026                     
+Prfcncy_scl  0.133 -0.014              
+Strssprxytn -0.167  0.030 -0.001       
+Syllbc_SCVC -0.167  0.004  0.002 -0.013
+
+#RT5
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure + Cumulative_RT_scaled:Stress +  
+    Cumulative_RT_scaled:Syllabic_Structure
+   Data: accurate_responses
+
+REML criterion at convergence: 24023.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3430 -0.4714  0.1424  0.6484  2.4824 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.008332 0.09128 
+ Player_ID   (Intercept) 0.053905 0.23217 
+ Residual                0.484614 0.69614 
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                                            Estimate Std. Error t value
+(Intercept)                                 6.499388   0.054972 118.232
+Cumulative_RT_scaled                       -0.067307   0.012027  -5.596
+Proficiency_scaled                         -0.029393   0.057523  -0.511
+Stressparoxytone                           -0.022502   0.018807  -1.196
+Syllabic_StructureCVC                      -0.046906   0.018770  -2.499
+Cumulative_RT_scaled:Stressparoxytone       0.003382   0.013503   0.250
+Cumulative_RT_scaled:Syllabic_StructureCVC -0.001374   0.013507  -0.102
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp S_SCVC Cm_RT_:S
+Cmltv_RT_sc  0.009                                     
+Prfcncy_scl  0.133 -0.008                              
+Strssprxytn -0.167  0.033 -0.001                       
+Syllbc_SCVC -0.167  0.018  0.002 -0.014                
+Cmltv_RT_:S  0.009 -0.532 -0.003  0.017 -0.044         
+C_RT_:S_SCV  0.006 -0.502  0.001 -0.043  0.017 -0.063  
+
+
+#RT6
+Linear mixed model fit by REML ['lmerMod']
+Formula: RTs_MS_log ~ Cumulative_RT_scaled + (1 | Player_ID) + (1 | Sentence_ID) +  
+    Proficiency_scaled + Stress + Syllabic_Structure + Cumulative_RT_scaled:Stress +  
+    Cumulative_RT_scaled:Syllabic_Structure + Proficiency_scaled:Stress +      Proficiency_scaled:Syllabic_Structure
+   Data: accurate_responses
+
+REML criterion at convergence: 24032.5
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-9.3635 -0.4734  0.1449  0.6492  2.4741 
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ Sentence_ID (Intercept) 0.008253 0.09085 
+ Player_ID   (Intercept) 0.053787 0.23192 
+ Residual                0.484545 0.69609 
+Number of obs: 11250, groups:  Sentence_ID, 192; Player_ID, 20
+
+Fixed effects:
+                                             Estimate Std. Error t value
+(Intercept)                                 6.499e+00  5.491e-02 118.376
+Cumulative_RT_scaled                       -6.864e-02  1.204e-02  -5.700
+Proficiency_scaled                         -1.097e-02  5.820e-02  -0.188
+Stressparoxytone                           -2.268e-02  1.876e-02  -1.209
+Syllabic_StructureCVC                      -4.718e-02  1.873e-02  -2.520
+Cumulative_RT_scaled:Stressparoxytone       4.408e-03  1.352e-02   0.326
+Cumulative_RT_scaled:Syllabic_StructureCVC  5.644e-05  1.352e-02   0.004
+Proficiency_scaled:Stressparoxytone        -1.136e-02  1.340e-02  -0.848
+Proficiency_scaled:Syllabic_StructureCVC   -2.555e-02  1.338e-02  -1.910
+
+Correlation of Fixed Effects:
+            (Intr) Cm_RT_ Prfcn_ Strssp S_SCVC Cm_RT_:S C_RT_:S_ Prf_:S
+Cmltv_RT_sc  0.009                                                     
+Prfcncy_scl  0.132 -0.016                                              
+Strssprxytn -0.167  0.034 -0.002                                       
+Syllbc_SCVC -0.167  0.018  0.001 -0.014                                
+Cmltv_RT_:S  0.009 -0.532  0.004  0.016 -0.044                         
+C_RT_:S_SCV  0.006 -0.503  0.009 -0.044  0.017 -0.062                  
+Prfcncy_s:S -0.003  0.022 -0.110  0.003  0.003 -0.048   -0.016         
+Prf_:S_SCVC  0.001  0.046 -0.110  0.003  0.006 -0.016   -0.046   -0.044
